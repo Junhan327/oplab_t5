@@ -51,5 +51,3 @@ models.py 用来对数据库操作
 * data_list = 类名.objects.all()  这里的data_list是QuerySet类型，返回表
 * gender_choices可以用来做约束
 
-# 关于ajax
-* 最开始做用户注册界面的时候，每次用户点击类型为submit类型的button的时候，会以post形式向后端发送数据，视图函数接收到的时候会处理然后返回界面，这样会导致整个页面重新刷新，用户之前输入的比如账号和密码，邮箱的信息就全部清空了，非常不合理。如何解决不刷新页面实现前端向后端传输数据让我很头疼，因为当时搜索如何解决的时候总带着都将django如何解决这个问题，回答一般都是用post，当时让我真的很头疼，不过终于让我学习到了Ajax（Asynchronous Javascript And XML），即是异步的JavaScript和XML，Ajax其实就是浏览器与服务器之间的一种异步通信方式，能实现不刷新页面的同时传输数据，偷偷穿

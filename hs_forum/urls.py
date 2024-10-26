@@ -27,4 +27,13 @@ urlpatterns = [
     path('login_e/', views.login_e),
     path('showdate/', views.showdate),
     path('user/write', views.write),
+    path('user/show_article/<int:article_id>/', views.show_article),
+    path('user/profile/', views.profile),
+    path('user/update_article/<int:article_id>/', views.update),
+    path('user/delete_article/<int:article_id>/', views.delete),
+    path('user/delete_col/<int:article_id>/', views.delete_col),
+    path('collect/', views.collect), # 用于创建收藏关系
+    
+
+    # path('user/article', views.aricle),
 ]

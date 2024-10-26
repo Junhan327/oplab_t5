@@ -29,7 +29,7 @@ def login_e(request):
     emailexist = models.user_info.objects.filter(email=email).exists()
     if emailexist:
         if code == neededcode:
-            print("here")
+            print("correctcode")
             uinfo = models.user_info.objects.filter(email = email).first()
             name=uinfo.name
             request.session["info"] = name
@@ -84,16 +84,15 @@ def user(request):
 
     if not info:
         return redirect('/login/')
-    
     #显示所有文章
     quertinfo = models.article.objects.all()
+    print(quertinfo)
     return render(request,"user.html",{"username":info ,"qinfo":quertinfo})
 
 def test(request):
-    models.user_info.objects.create(name='test',password='123')
-    return HttpResponse("连接成功")
+    return render(request,"test.html")
 
-def showdate(request):
+def showdate(request): #测试是否正常显示系统时间
     now = datetime.datetime.now()
     today_time = datetime.datetime.strptime(now, '%Y-%m-%d')
     print(today_time)
@@ -101,8 +100,8 @@ def showdate(request):
 
 def write(request):
     if request.method =="GET":
-        return render(request,"write.html")
-    
+        info = request.session.get("info") # 查找cookie和用户信息
+        return render(request,"write.html",{"username":info})
     title = request.POST.get("title")
     content = request.POST.get("body")
     tags = request.POST.get("tags")
@@ -110,6 +109,52 @@ def write(request):
     a = models.user_info.objects.filter(name = who).first()
     author = a
     models.article.objects.create(title=title,content=content,tags=tags,likes = 0,author = author)
-    return HttpResponse("success")
+    return redirect("/user/")
     
+def show_article(request,article_id): 
+    info = request.session.get("info") # 查找cookie和用户信息
+    aid =  models.article.objects.get(id = article_id)
+    return render(request,"show_article.html",{"aid":aid,"username":info})
 
+def profile(request): 
+    info = request.session.get("info") # 查找cookie和用户信息
+    uinfo = models.user_info.objects.get(name = info)
+    ua = models.article.objects.filter(author = uinfo)
+    ca = models.collection.objects.filter(user = uinfo).select_related("article")
+    print(ca)
+    return render(request,"profile.html",{"username":info,"uinfo":uinfo,"ua":ua,"ca":ca})
+
+def update(request,article_id): 
+    if request.method =="GET":
+        info = request.session.get("info") # 查找cookie和用户信息
+        uinfo = models.user_info.objects.get(name = info)
+        ainfo = models.article.objects.get(id = article_id)
+        ua = models.article.objects.filter(author = uinfo)
+        return render(request,"update.html",{"username":info,"uinfo":uinfo,"ua":ua,"ainfo":ainfo})
+    title = request.POST.get("title")
+    content = request.POST.get("body")
+    tags = request.POST.get("tags")
+    who = request.session.get("info")
+    a = models.user_info.objects.filter(name = who).first()
+    models.article.objects.filter(id = article_id).update(title=title,content=content,tags=tags)
+    return redirect("/user/profile/")
+
+def delete(request,article_id): 
+    if request.method =="GET":
+        models.article.objects.filter(id = article_id).delete()
+        return redirect("/user/profile/")
+
+@csrf_exempt
+def collect(request):
+    aid = request.POST.get("article_id")
+    info = request.session.get("info")
+    aqueryset = models.article.objects.filter(id = aid).first()
+    uqueryset = models.user_info.objects.filter(name = info).first()
+    models.collection.objects.create(user = uqueryset,article = aqueryset)
+    return HttpResponse("收藏成功")
+
+def delete_col(request,article_id): 
+    if request.method =="GET":
+        ainfo = models.article.objects.get(id = article_id)
+        models.collection.objects.filter(article = ainfo).delete()
+        return redirect("/user/profile/")

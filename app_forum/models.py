@@ -14,3 +14,6 @@ class article(models.Model):
     likes = models.DecimalField(max_digits=6,decimal_places=0)
     author = models.ForeignKey(user_info,on_delete=models.CASCADE,null=True)
 
+class collection(models.Model):
+    user = models.ForeignKey(user_info,on_delete=models.CASCADE)
+    article =  models.ForeignKey(article,on_delete=models.CASCADE)

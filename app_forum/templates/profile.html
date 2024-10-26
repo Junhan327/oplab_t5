@@ -38,29 +38,55 @@
                 </ul>
               </li>
             </ul>
-          </div><!-- /.navbar-collapse -->
-        </div><!-- /.container-fluid -->
+          </div>
+        </div>
       </nav>
       
-      <div class="jumbotron">
-        <h1 style="text-align:center;">欢迎来到HAPPYSHEEP论坛!</h1>
+      <div class="page-header" >
+        <h1 style="text-align:center;">个人主页<small>
+        </div>
+      <div class="input-group" >
+        <span class="input-group-addon" id="basic-addon1">昵称</span>
+        <input value = "{{username}}"type="text" class="form-control" name ="title" aria-describedby="basic-addon1" readonly>
       </div>
-
-      <div style="text-align: center;">
-      {% for field in qinfo %}
+      <div class="input-group">
+        <span class="input-group-addon" id="basic-addon2">注册时间</span>
+        <input value = "{{uinfo.date}}"type="text" class="form-control" name = "d" aria-describedby="basic-addon1" readonly>
+      </div>
+      <div class="page-header" >
+        <h3 style="text-align:center;">发布的文章<small>
+        </div>
+        {% for field in ua %}
       <div class="col-md-4 mb-4">
-        <div class="card h-100" >
-          <div class="card-body">
+      <div class="card h-100" >
+         <div class="card-body">
+            <h4 class="card-title">{{field.id}}</h5>
             <h4 class="card-title">{{field.title}}</h5>
-            <h6 class="card-subtitle mb-2 text-muted">作者：{{field.author.name}}</h6>
             <p class="card-text">{{ field.content | slice:":50" }}······</p>
-            <a href="/user/show_article/{{field.id}}" >查看文章</a>
-          </div>
+           <a href="/user/show_article/{{field.id}}" >查看文章</a>
+           <a href="/user/update_article/{{field.id}}" >修改文章</a>
+           <a href="/user/delete_article/{{field.id}}" >删除文章</a>
+        </div>
         </div>
       </div>
       {% endfor %}
+    <div class="page-header" >
+        <h3 style="text-align:center;">收藏的文章<small>       
+    </div>
+    {% for field in ca %}
+    <div class="col-md-4 mb-4">
+    <div class="card h-100" >
+       <div class="card-body">
+          <h4 class="card-title">{{field.article.id}}</h5>
+          <h4 class="card-title">{{field.article.title}}</h5>
+          <h5 class="card-title">作者:{{field.article.author.name}}</h5>
+          <p class="card-text">{{ field.article.content | slice:":50" }}······</p>
+         <a href="/user/show_article/{{field.article.id}}" >查看文章</a>
+         <a href="/user/delete_col/{{field.article.id}}" >取消收藏</a>
       </div>
- 
+      </div>
+    </div>
+    {% endfor %} 
       
       
 
