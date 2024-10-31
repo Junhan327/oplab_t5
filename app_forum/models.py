@@ -13,6 +13,7 @@ class article(models.Model):
     date = models.DateField(auto_now_add=True)
     likes = models.DecimalField(max_digits=6,decimal_places=0)
     author = models.ForeignKey(user_info,on_delete=models.CASCADE,null=True)
+    collections = models.DecimalField(max_digits=6,decimal_places=0,default = 0)
 
 class collection(models.Model):
     user = models.ForeignKey(user_info,on_delete=models.CASCADE)

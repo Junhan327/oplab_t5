@@ -79,15 +79,40 @@ def sentcode(request):
 
 def user(request):
     # cookie 需要登录才能访问的页面需要这个
+    if request.method == "GET":
+        info = request.session.get("info")
+        if not info:
+            return redirect('/login/')
+        #显示所有文章
+        ##quertinfo = models.article.objects.all()
 
+        ##显示分页后的文章
+        page = int(request.GET.get('page',1))
+        numofpage = 20;
+        start = (page-1)* numofpage
+        end = page * numofpage
+        quertinfo = models.article.objects.all()[start:end]
+        num = models.article.objects.all().count()
+        pagenum = int((num/numofpage)+1)
+        pages = list(range(1, pagenum))
+        return render(request,"user.html",{"username":info ,"qinfo":quertinfo,"pages":pages})
     info = request.session.get("info")
-
     if not info:
         return redirect('/login/')
-    #显示所有文章
-    quertinfo = models.article.objects.all()
-    print(quertinfo)
-    return render(request,"user.html",{"username":info ,"qinfo":quertinfo})
+    search = request.POST.get("searchdata")
+    page = int(request.GET.get('page',1))
+    numofpage = 20;
+    start = (page-1)* numofpage
+    end = page * numofpage
+    result = models.article.objects.filter(content__contains=search)[start:end]
+    num = models.article.objects.filter(content__contains=search).count()
+    pagenum = int((num/numofpage)+1)
+    pages = list(range(1, pagenum))
+    if result:
+        return render(request,"user.html",{"username":info ,"qinfo":result,"pages":pages})
+    else:
+        return HttpResponse("什么也没有搜索到")
+
 
 def test(request):
     return render(request,"test.html")
@@ -117,12 +142,41 @@ def show_article(request,article_id):
     return render(request,"show_article.html",{"aid":aid,"username":info})
 
 def profile(request): 
-    info = request.session.get("info") # 查找cookie和用户信息
-    uinfo = models.user_info.objects.get(name = info)
-    ua = models.article.objects.filter(author = uinfo)
-    ca = models.collection.objects.filter(user = uinfo).select_related("article")
-    print(ca)
-    return render(request,"profile.html",{"username":info,"uinfo":uinfo,"ua":ua,"ca":ca})
+    if request.method =="GET":
+        info = request.session.get("info") # 查找cookie和用户信息
+        if not info:
+            return redirect('/login/')
+        uinfo = models.user_info.objects.get(name = info)
+        page = int(request.GET.get('page',1))
+        numofpage = 20
+        start = (page-1)* numofpage
+        end = page * numofpage
+        ua = models.article.objects.filter(author = uinfo)[start:end]
+        ca = models.collection.objects.filter(user = uinfo).select_related("article")
+        num = models.article.objects.all().count()
+        pagenum = int((num/numofpage)+1)
+        pages = list(range(1, pagenum))
+        #获取点赞数量,收藏数量
+
+
+        # 这里需要修改，当前吧所有人点赞数量都算出了了，应该算具体个人的，上面的变量应该可以利用
+        likes = models.article.objects.filter(author = uinfo)
+        ulikes = 0
+        ucollections = 0
+        for i in likes:
+            ulikes += i.likes
+            ucollections += i.collections
+        return render(request,"profile.html",{"username":info,"uinfo":uinfo,"ua":ua,"ca":ca,"pages":pages,"ulikes":ulikes,'ucollections':ucollections})
+    ##print(request.FILES)
+    ##file = request.FILES.get("myfile")
+    ##f = open("test.png",wb)
+    ##for chunk in file.chunks():
+    ##    f.write(chunk)
+    ##f.close
+
+
+
+
 
 def update(request,article_id): 
     if request.method =="GET":
@@ -150,11 +204,28 @@ def collect(request):
     info = request.session.get("info")
     aqueryset = models.article.objects.filter(id = aid).first()
     uqueryset = models.user_info.objects.filter(name = info).first()
-    models.collection.objects.create(user = uqueryset,article = aqueryset)
+    models.collection.objects.create(user = uqueryset , article = aqueryset)
+    a = models.article.objects.filter(id = aid).first()
+    acollect = a.collections + 1
+    models.article.objects.filter(id = aid).update(collections = acollect)
     return HttpResponse("收藏成功")
+
+@csrf_exempt
+def like(request):
+    aid = request.POST.get("article_id")
+    a = models.article.objects.filter(id = aid).first()
+    new_likes = a.likes + 1
+    models.article.objects.filter(id = aid).update(likes = new_likes)
+    return HttpResponse("点赞成功")
 
 def delete_col(request,article_id): 
     if request.method =="GET":
         ainfo = models.article.objects.get(id = article_id)
         models.collection.objects.filter(article = ainfo).delete()
         return redirect("/user/profile/")
+    
+
+def t(request): 
+    if request.method =="GET":
+        models.user_info.objects.create(name="test" ,password = "test123" ,email ="test@qq.com")
+        return HttpResponse("succ")

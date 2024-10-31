@@ -41,10 +41,18 @@
           </div>
         </div>
       </nav>
-      
       <div class="page-header" >
         <h1 style="text-align:center;">个人主页<small>
         </div>
+      
+      <form method = "post" enctype = "multipart/form-data">
+        {% csrf_token %}
+        <div class="input-group" >
+          <span class="input-group-addon" id="basic-addon1">头像</span>
+          <input value = "选择文件" type="file" class="form-control" name ="myfile" aria-describedby="basic-addon1">
+          <input type = "submit" value = "上传文件">
+        </div>
+      </form>
       <div class="input-group" >
         <span class="input-group-addon" id="basic-addon1">昵称</span>
         <input value = "{{username}}"type="text" class="form-control" name ="title" aria-describedby="basic-addon1" readonly>
@@ -52,6 +60,14 @@
       <div class="input-group">
         <span class="input-group-addon" id="basic-addon2">注册时间</span>
         <input value = "{{uinfo.date}}"type="text" class="form-control" name = "d" aria-describedby="basic-addon1" readonly>
+      </div>
+      <div class="input-group">
+        <span class="input-group-addon" id="basic-addon2">获赞数量</span>
+        <input value = "{{ulikes}}"type="text" class="form-control" name = "likes" aria-describedby="basic-addon1" readonly>
+      </div>
+      <div class="input-group">
+        <span class="input-group-addon" id="basic-addon2">被收藏数量</span>
+        <input value = "{{ucollections}}"type="text" class="form-control" name = "collections" aria-describedby="basic-addon1" readonly>
       </div>
       <div class="page-header" >
         <h3 style="text-align:center;">发布的文章<small>
@@ -70,6 +86,30 @@
         </div>
       </div>
       {% endfor %}
+      <div>
+        <nav aria-label="Page navigation">
+          <ul class="pagination pagination-sm">
+            <li>
+              <a href="#" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+              </a>
+            </li>
+            {% for i in pages %}
+              <li><a href="?page={{i}}">{{i}}</a></li>
+            {% endfor %}
+            <li>
+              <a href="#" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+
+
+
+
+
     <div class="page-header" >
         <h3 style="text-align:center;">收藏的文章<small>       
     </div>
@@ -87,7 +127,8 @@
       </div>
     </div>
     {% endfor %} 
-      
+    
+ 
       
 
 

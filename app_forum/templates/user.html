@@ -41,11 +41,25 @@
           </div><!-- /.navbar-collapse -->
         </div><!-- /.container-fluid -->
       </nav>
-      
+      <!--
       <div class="jumbotron">
         <h1 style="text-align:center;">欢迎来到HAPPYSHEEP论坛!</h1>
       </div>
+      -->
+      
+      
+      <div>
+      <form method ="POST">
+          {% csrf_token %}
+        <div class="input-group">
+          <span class="input-group-addon" id="basic-addon1">输入想检索的内容</span>
+          <input type="text" name = "searchdata"class="form-control" aria-describedby="basic-addon1">
+        </div>
+        <input type = "submit" value="搜索"></span>
+      </from>
+    </div>
 
+      
       <div style="text-align: center;">
       {% for field in qinfo %}
       <div class="col-md-4 mb-4">
@@ -60,6 +74,26 @@
       </div>
       {% endfor %}
       </div>
+
+    <div>
+      <nav aria-label="Page navigation">
+        <ul class="pagination pagination-sm">
+          <li>
+            <a href="#" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          {% for i in pages %}
+            <li><a href="?page={{i}}">{{i}}</a></li>
+          {% endfor %}
+          <li>
+            <a href="#" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
  
       
       

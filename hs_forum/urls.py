@@ -19,6 +19,7 @@ from django.urls import path
 from app_forum import views
 urlpatterns = [
     path('test/', views.test),
+    path('t/', views.t),
     path('login/', views.login),
     path('register/', views.register),
     path('user/', views.user),
@@ -33,6 +34,7 @@ urlpatterns = [
     path('user/delete_article/<int:article_id>/', views.delete),
     path('user/delete_col/<int:article_id>/', views.delete_col),
     path('collect/', views.collect), # 用于创建收藏关系
+    path('like/',views.like),
     
 
     # path('user/article', views.aricle),
