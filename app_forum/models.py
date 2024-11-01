@@ -6,6 +6,7 @@ class user_info(models.Model):
     email = models.CharField(max_length=32)
     date = models.DateTimeField(auto_now_add=True)
 
+
 class article(models.Model):
     title = models.CharField(max_length=32)
     content = models.TextField()
@@ -18,3 +19,13 @@ class article(models.Model):
 class collection(models.Model):
     user = models.ForeignKey(user_info,on_delete=models.CASCADE)
     article =  models.ForeignKey(article,on_delete=models.CASCADE)
+
+class img(models.Model):
+    theimg = models.ImageField(upload_to='media')
+    user = models.ForeignKey(user_info,on_delete=models.CASCADE,null=True)
+
+class Comment(models.Model): 
+    comment_article = models.ForeignKey(article,on_delete=models.CASCADE)
+    comment_content = models.TextField()
+    comment_author = models.ForeignKey(user_info,on_delete=models.CASCADE)
+    comment_time = models.DateTimeField(auto_now_add=True)

@@ -17,6 +17,8 @@ Including another URLconf
 #from django.contrib import admin
 from django.urls import path
 from app_forum import views
+from django.conf import settings
+from django.conf.urls.static import static
 urlpatterns = [
     path('test/', views.test),
     path('t/', views.t),
@@ -35,7 +37,5 @@ urlpatterns = [
     path('user/delete_col/<int:article_id>/', views.delete_col),
     path('collect/', views.collect), # 用于创建收藏关系
     path('like/',views.like),
-    
-
     # path('user/article', views.aricle),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

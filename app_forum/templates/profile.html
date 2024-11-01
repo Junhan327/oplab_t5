@@ -49,6 +49,12 @@
         {% csrf_token %}
         <div class="input-group" >
           <span class="input-group-addon" id="basic-addon1">头像</span>
+        
+          {% if userimg %}
+          <img src="{{ MEDIA_URL }}{{ userimg }}" alt="User Image" width="100" height="100">
+          {% endif %}
+
+          
           <input value = "选择文件" type="file" class="form-control" name ="myfile" aria-describedby="basic-addon1">
           <input type = "submit" value = "上传文件">
         </div>

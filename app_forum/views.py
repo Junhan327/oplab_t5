@@ -4,6 +4,8 @@ from django.core.mail import send_mail
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.core.cache import cache
+from django.views.decorators.cache import cache_page
 import random,datetime
 # Create your views here.
 def login(request):
@@ -77,31 +79,61 @@ def sentcode(request):
     send_mail(subject="HAPPYSHEEP论坛验证码",message="你的验证码是"+random_code,from_email="1919376677@qq.com",recipient_list=[mail])
     return HttpResponse("发送成功")
 
+
+# 以这种方式能大大减少加载时间 ,但是出现问题，
+# 由于页面是预加载的，所以似乎并不能正确获取cookie，用户名称会显示错误
+# 并且这样子就让登录失去了意义
+# 我暂时还不知道怎么解决这个问题
+@cache_page(300)
 def user(request):
     # cookie 需要登录才能访问的页面需要这个
     if request.method == "GET":
+
+
+        # 压测暂时关掉登录
         info = request.session.get("info")
+        print(info)
         if not info:
             return redirect('/login/')
+        #info = "压测"
+
+
         #显示所有文章
         ##quertinfo = models.article.objects.all()
 
         ##显示分页后的文章
         page = int(request.GET.get('page',1))
-        numofpage = 20;
+
+        #pagec = str(request.GET.get('page',1))
+        #key_page = 'quertinfo'+pagec # 设置键对名称
+
+        numofpage = 200
         start = (page-1)* numofpage
         end = page * numofpage
+
+        #cacheq = cache.get(key_page)
+        #print(cacheq)
+        #cnum = cache.get('num')
+        #print(cnum)
+        #if cacheq is not None:
+        #    print("use cache")
+        #    pagenum = int((cnum/numofpage)+1)
+        #    pages = list(range(1, pagenum))
+        #    return render(request,"user.html",{"username":info ,"qinfo":cacheq,"pages":pages})
         quertinfo = models.article.objects.all()[start:end]
         num = models.article.objects.all().count()
+        #cache.set(key_page,quertinfo,timeout=300)
+        #cache.set('num',num)
         pagenum = int((num/numofpage)+1)
         pages = list(range(1, pagenum))
         return render(request,"user.html",{"username":info ,"qinfo":quertinfo,"pages":pages})
+    #检索
     info = request.session.get("info")
     if not info:
         return redirect('/login/')
     search = request.POST.get("searchdata")
     page = int(request.GET.get('page',1))
-    numofpage = 20;
+    numofpage = 200
     start = (page-1)* numofpage
     end = page * numofpage
     result = models.article.objects.filter(content__contains=search)[start:end]
@@ -134,12 +166,21 @@ def write(request):
     a = models.user_info.objects.filter(name = who).first()
     author = a
     models.article.objects.create(title=title,content=content,tags=tags,likes = 0,author = author)
-    return redirect("/user/")
-    
+    return redirect("/user/") 
+
 def show_article(request,article_id): 
-    info = request.session.get("info") # 查找cookie和用户信息
+    if request.method =="GET":
+        info = request.session.get("info") # 查找cookie和用户信息
+        aid =  models.article.objects.get(id = article_id)
+        comment =  models.Comment.objects.filter(comment_article = aid)
+        return render(request,"show_article.html",{"aid":aid,"username":info,"comment":comment})
+    info = request.session.get("info")
+    uinfo = models.user_info.objects.get(name = info)
     aid =  models.article.objects.get(id = article_id)
-    return render(request,"show_article.html",{"aid":aid,"username":info})
+    commentbody = request.POST.get("commentbody")
+    models.Comment.objects.create(comment_article = aid,comment_content = commentbody,comment_author = uinfo)
+    comment =  models.Comment.objects.filter(comment_article = aid)
+    return render(request,"show_article.html",{"aid":aid,"username":info,"comment":comment})
 
 def profile(request): 
     if request.method =="GET":
@@ -147,6 +188,8 @@ def profile(request):
         if not info:
             return redirect('/login/')
         uinfo = models.user_info.objects.get(name = info)
+
+        
         page = int(request.GET.get('page',1))
         numofpage = 20
         start = (page-1)* numofpage
@@ -157,26 +200,28 @@ def profile(request):
         pagenum = int((num/numofpage)+1)
         pages = list(range(1, pagenum))
         #获取点赞数量,收藏数量
-
-
-        # 这里需要修改，当前吧所有人点赞数量都算出了了，应该算具体个人的，上面的变量应该可以利用
         likes = models.article.objects.filter(author = uinfo)
         ulikes = 0
         ucollections = 0
         for i in likes:
             ulikes += i.likes
             ucollections += i.collections
+        uimg = models.img.objects.filter(user = uinfo).first()
+        if uimg:
+            userimg = uimg.theimg
+            return render(request,"profile.html",{"username":info,"uinfo":uinfo,"ua":ua,"ca":ca,"pages":pages,"ulikes":ulikes,'ucollections':ucollections,"userimg":userimg})
         return render(request,"profile.html",{"username":info,"uinfo":uinfo,"ua":ua,"ca":ca,"pages":pages,"ulikes":ulikes,'ucollections':ucollections})
-    ##print(request.FILES)
-    ##file = request.FILES.get("myfile")
-    ##f = open("test.png",wb)
-    ##for chunk in file.chunks():
-    ##    f.write(chunk)
-    ##f.close
-
-
-
-
+    print(request.FILES)
+    info = request.session.get("info")
+    uinfo = models.user_info.objects.get(name = info)
+    file = request.FILES.get("myfile")
+    #filename = str(uinfo.id)
+    #f = open("/media/" + filename + ".png", mode='wb')
+    #for chunk in file.chunks():
+    #    f.write(chunk)
+    #f.close
+    models.img.objects.create(theimg = file, user = uinfo)
+    return redirect("/user/profile/")
 
 def update(request,article_id): 
     if request.method =="GET":
